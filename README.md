@@ -85,7 +85,7 @@ pip install -r requirements.txt
 
 Le fichier `best.pt` fait ~50 Mo et **ne peut pas être stocké directement dans le dépôt**. Il est disponible dans la section **[Releases](https://github.com/nolannedelec/YOLOv8-WindTurbine-Inspection/releases)** de ce dépôt.
 
-Placez-le dans le dossier `modeles/` une fois téléchargé.
+Placez-le dans le dossier `models/` une fois téléchargé.
 
 ### 4. Lancer l'interface Gradio (test local)
 
