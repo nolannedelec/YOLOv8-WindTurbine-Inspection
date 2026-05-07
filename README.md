@@ -111,7 +111,7 @@ Le guide complet de conversion et de déploiement (préparation de la Jetson, pa
 
 ---
 
-## 📦 requirements.txt
+## 📦 info sur requirements.txt
 
 ```
 ultralytics
