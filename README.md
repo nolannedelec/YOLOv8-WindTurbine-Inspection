@@ -1,7 +1,7 @@
 # 🌬️ Détection de Défauts sur Pales d'Éoliennes par IA Embarquée
 
 > Projet de M1 – ISEN Brest (2026)  
-> **Nolan Nedelec** & **Cassandre Poyen** 
+> **Nolan Nedelec** (Spécialité IA) & **Cassandre Poyen** (Spécialité Robotique)
 
 ---
 
@@ -36,11 +36,11 @@ L'inspection des pales d'éoliennes est une opération **dangereuse et coûteuse
 ### Modèle
 
 - **YOLOv8m** — sélectionné après comparaison avec YOLOv11 et YOLOv26
-- Dataset : **1 886 images** réelles, nettoyées et équilibrées 
+- Dataset : **1 886 images** réelles, nettoyées et équilibrées
 
 ### Optimisations pour l'embarqué
 
-- Conversion **TensorRT (FP16)** pour l'accélération GPU sur Jetson
+- Conversion **TensorRT (FP16)** via `trtexec` directement sur la Jetson
 - Vectorisation **NumPy** du post-traitement pour éliminer les goulots d'étranglement CPU
 
 ---
@@ -49,15 +49,18 @@ L'inspection des pales d'éoliennes est une opération **dangereuse et coûteuse
 
 ```
 .
-├── models/                  # Poids du modèle
-│   ├── best.pt               # ⚠️ Voir section Releases (~50Mo)
-│   └── README.md             # Instructions pour générer le .engine
+├── models/
+│   ├── best.pt               # ⚠️ Voir section Releases (~50 Mo)
+│   └── JETSON.md             # Guide de conversion et déploiement sur Jetson
+│                             # best.onnx et best.engine NON versionnés (trop volumineux / spécifiques au matériel)
+│                             # → Voir section Déploiement pour les générer
 │
 ├── src/
-│   └── app.py                # Interface Gradio (test local / webcam)
+│   ├── app.py                # Interface Gradio (test local / webcam)
+│   └── live_jetson.py        # Inférence temps réel optimisée pour la Jetson
 │
 ├── data/
-│   └── data_img/         # Images de test (exemples de défauts)
+│   └── data_img/             # Images de test (exemples de défauts)
 │
 └── requirements.txt
 ```
@@ -69,8 +72,8 @@ L'inspection des pales d'éoliennes est une opération **dangereuse et coûteuse
 ### 1. Cloner le dépôt
 
 ```bash
-git clone https://github.com/nolannedelec/<nom-du-repo>.git
-cd <nom-du-repo>
+git clone https://github.com/nolannedelec/YOLOv8-WindTurbine-Inspection.git
+cd YOLOv8-WindTurbine-Inspection
 ```
 
 ### 2. Installer les dépendances
@@ -100,6 +103,13 @@ L'interface permet de :
 
 ---
 
+## 🤖 Déploiement sur NVIDIA Jetson Orin Nano
+
+Le guide complet de conversion et de déploiement (préparation de la Jetson, passage `.pt` → `.onnx` → `.engine`, lancement de l'inférence, comparaison des performances) est disponible ici :
+
+📖 **[models/JETSON.md](./models/JETSON.md)**
+
+---
 
 ## 📦 requirements.txt
 
@@ -109,6 +119,7 @@ gradio
 numpy
 opencv-python
 ```
+
 ---
 
 *Projet réalisé dans le cadre du Master 1 à l'**ISEN Brest** – 2026*
