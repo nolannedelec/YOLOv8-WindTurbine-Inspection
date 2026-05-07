@@ -14,7 +14,7 @@ L'inspection des pales d'éoliennes est une opération **dangereuse et coûteuse
 | Classe | Description |
 |--------|-------------|
 | `Crack` | Fissures de surface |
-| `Erosion` | Érosion du bord d'attaque |
+| `Erosion` | Érosion / Corrosion |
 | `Damage` | Dégâts structurels divers |
 
 ---
