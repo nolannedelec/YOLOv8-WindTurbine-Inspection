@@ -50,7 +50,7 @@ L'inspection des pales d'éoliennes est une opération **dangereuse et coûteuse
 ```
 .
 ├── models/                  # Poids du modèle
-│   ├── best.pt               # ⚠️ Voir section Releases (> 100 Mo)
+│   ├── best.pt               # ⚠️ Voir section Releases (~50Mo)
 │   └── README.md             # Instructions pour générer le .engine
 │
 ├── src/
