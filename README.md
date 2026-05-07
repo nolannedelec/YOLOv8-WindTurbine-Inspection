@@ -57,7 +57,7 @@ L'inspection des pales d'éoliennes est une opération **dangereuse et coûteuse
 │   └── app.py                # Interface Gradio (test local / webcam)
 │
 ├── data/
-│   └── test_img/         # Images de test (exemples de défauts)
+│   └── data_img/         # Images de test (exemples de défauts)
 │
 └── requirements.txt
 ```
