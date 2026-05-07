@@ -5,7 +5,7 @@ from ultralytics import YOLO
 from pathlib import Path
 
 # 1. CHARGEMENT DU MODÈLE
-MODEL_PATH = "best.pt"
+MODEL_PATH = "models/best.pt"
 
 # sys.exit(1) provoque un arrêt propre avec message lisible,
 # plutôt qu'un crash obscur lors de la première inférence
