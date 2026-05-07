@@ -1,53 +1,74 @@
-# 🌬️ Inspection de Pales d'Éoliennes par IA — Nordtank
+# 🚀 Guide d'Inférence et Optimisation (NVIDIA Jetson)
 
-## Structure du projet
-INTERFACE/
-├── app.py           # Application principale (interface Gradio + détection YOLO)
-├── best.pt          # Modèle YOLO entraîné
-├── requirements.txt # Dépendances Python
-└── README.txt       # Ce fichier
+Ce guide explique comment transformer le modèle entraîné (`.pt`) en un moteur de calcul haute performance (`.engine`) pour atteindre **30 FPS** sur la NVIDIA Jetson Orin Nano.
 
-## Prérequis
-- Python 3.9 ou supérieur
-- Le fichier `best.pt` (modèle entraîné) doit être placé à la racine du dossier INTERFACE/
+---
 
-## Installation et démarrage
-Ouvrez un terminal dans le dossier INTERFACE/, puis :
+## 1. Préparation de la Jetson
 
-### Option rapide
-    pip install -r requirements.txt
-    python app.py
+Avant de lancer l'inférence, il est nécessaire de pousser les performances de la carte au maximum :
 
-### Option propre (environnement isolé)
-    python -m venv gradio-env
+```bash
+# Activer le mode de puissance maximale
+sudo nvpmodel -m 0
 
-    Windows :
-        gradio-env\Scripts\activate
+# Forcer les horloges du GPU au maximum
+sudo jetson_clocks
+```
 
-    macOS/Linux :
-        source gradio-env/bin/activate
+---
 
-    pip install -r requirements.txt
-    python app.py
+## 2. Conversion du modèle (en deux étapes)
 
-L'interface s'ouvre automatiquement sur http://127.0.0.1:7860
-Pour générer un lien public accessible depuis l'extérieur, modifier la dernière
-ligne de app.py : demo.launch(share=True, inbrowser=True)
+La conversion se fait en **deux étapes séparées** : d'abord sur votre machine de développement, puis sur la Jetson. Cette approche évite d'installer Ultralytics sur la Jetson et supprime les conflits de versions fréquents.
 
-## Utilisation
-1. Ajustez le seuil de confiance (0.4 par défaut)
-2. Chargez une image (upload) ou activez la webcam
-3. Cliquez sur 🔍 LANCER L'ANALYSE
-4. Consultez l'image annotée et le bilan des défauts détectés
+### Étape 2a — Sur votre machine : `.pt` → `.onnx`
 
-## Dépannage
+```bash
+yolo export model=modeles/best.pt format=onnx half=True
+```
 
-❌ "Le fichier 'best.pt' est introuvable"
-→ Placez best.pt dans le dossier INTERFACE/, au même niveau que app.py.
+Un fichier `best.onnx` sera généré dans `modeles/`. Copiez-le ensuite sur la Jetson (via `scp`, clé USB, etc.).
 
-❌ L'interface ne s'ouvre pas automatiquement
-→ Ouvrez manuellement http://127.0.0.1:7860 dans votre navigateur.
+### Étape 2b — Sur la Jetson : `.onnx` → `.engine`
 
-❌ Erreur liée à OpenCV sur Linux/serveur
-→ Remplacez dans requirements.txt :
-   opencv-python  →  opencv-python-headless
+```bash
+/usr/src/tensorrt/bin/trtexec \
+  --onnx=modeles/best.onnx \
+  --saveEngine=modeles/best.engine \
+  --fp16
+```
+
+| Paramètre | Rôle |
+|-----------|------|
+| `--onnx` | Chemin vers le fichier ONNX transféré |
+| `--saveEngine` | Chemin de sortie du moteur TensorRT |
+| `--fp16` | Active la précision FP16 pour accélérer l'inférence GPU |
+
+> ⚠️ **Ce fichier `.engine` est spécifique au matériel.** Il ne fonctionnera pas sur une autre machine et ne doit pas être partagé dans le dépôt.
+
+---
+
+## 3. Lancement de l'inférence temps réel
+
+Pour obtenir la fluidité maximale (30 FPS), le script `live_jetson.py` exploite la **vectorisation NumPy** pour le post-traitement des boîtes de détection, éliminant ainsi les goulots d'étranglement CPU.
+
+```bash
+python3 src/live_jetson.py --engine modeles/best.engine --source 0
+```
+
+| Argument | Description |
+|----------|-------------|
+| `--engine` | Chemin vers le moteur TensorRT généré |
+| `--source 0` | Caméra embarquée de la Jetson (ou index du flux vidéo) |
+
+---
+
+## 💡 Pourquoi cette optimisation ?
+
+| Configuration | FPS | Latence |
+|---------------|-----|---------|
+| Sans TensorRT (CPU/GPU brut) | ~8 FPS | ~120 ms |
+| **TensorRT FP16 + NumPy(vectorisation)** | **30 FPS** | **~33 ms** |
+
+Une latence inférieure à **35 ms** est indispensable pour qu'un drone en mouvement puisse détecter et localiser les défauts en temps réel sans flou de mouvement ni décalage d'affichage.
