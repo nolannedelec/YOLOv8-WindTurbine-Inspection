@@ -1,117 +1,108 @@
-# 🌬️ Détection de Défauts sur Pales d'Éoliennes par IA Embarquée
-
-> Projet de M1 – ISEN Brest (2026)  
-> **Nolan Nedelec** (Spécialité IA) & **Cassandre Poyen** (Spécialité Robotique)
-
----
-
-## 📋 Présentation
-
-L'inspection des pales d'éoliennes est une opération **dangereuse et coûteuse**, traditionnellement réalisée par des techniciens en hauteur ou via des systèmes de cordistes. Ce projet propose une **alternative autonome et embarquée** : un modèle IA déployé sur drone, capable de détecter en temps réel les défauts structurels des pales.
-
-### Classes de défauts détectées
-
-| Classe | Description |
-|--------|-------------|
-| `Crack` | Fissures de surface |
-| `Erosion` | Érosion / Corrosion |
-| `Damage` | Dégâts structurels divers |
+# 🌬️ AI-Powered Wind Turbine Blade Defect Detection (Edge Deployment)
+> M1 Project – ISEN Brest (2026)
+> **Nolan Nedelec** & **Cassandre Poyen** 
 
 ---
 
-## ⚡ Performances
+## 📋 Overview
 
-| Métrique | Valeur |
-|----------|--------|
-| Précision (mAP50) | **82,1 %** |
-| Fluidité | **30 FPS** |
-| Latence totale | **31 – 33 ms** |
-| Seuil de confiance recommandé | **0.35 – 0.40** |
-| Cible matérielle | NVIDIA Jetson Orin Nano |
+Wind turbine blade inspection is a **dangerous and costly** operation, traditionally carried out by technicians working at height or via rope access systems. This project proposes an **autonomous embedded alternative**: an AI model deployed on a drone, capable of detecting structural blade defects in real time.
 
----
+### Detected Defect Classes
 
-## 🏗️ Architecture Technique
-
-### Modèle
-
-- **YOLOv8m** — sélectionné après comparaison avec YOLOv11 et YOLOv26
-- Dataset : **1 886 images** réelles, nettoyées et équilibrées
-
-### Optimisations pour l'embarqué
-
-- Conversion **TensorRT (FP16)** via `trtexec` directement sur la Jetson
-- Vectorisation **NumPy** du post-traitement pour éliminer les goulots d'étranglement CPU
+| Class | Description |
+|-------|-------------|
+| `Crack` | Surface cracks |
+| `Erosion` | Erosion / Corrosion |
+| `Damage` | Various structural damage |
 
 ---
 
-## 📁 Structure du dépôt
+## ⚡ Performance
+
+| Metric | Value |
+|--------|-------|
+| Accuracy (mAP50) | **82.1%** |
+| Throughput | **30 FPS** |
+| Total Latency | **31 – 33 ms** |
+| Recommended Confidence Threshold | **0.35 – 0.40** |
+| Target Hardware | NVIDIA Jetson Orin Nano |
+
+---
+
+## 🏗️ Technical Architecture
+
+### Model
+- **YOLOv8m** — selected after comparison with YOLOv11 and YOLOv26
+- Dataset: **1,886** real-world images, cleaned and balanced
+
+### Embedded Optimizations
+- **TensorRT (FP16)** conversion via `trtexec` directly on the Jetson
+- **NumPy** vectorization of post-processing to eliminate CPU bottlenecks
+
+---
+
+## 📁 Repository Structure
 
 ```
 .
 ├── models/
-│   ├── best.pt               # ⚠️ Voir section Releases (~50 Mo)
-│   └── JETSON.md             # Guide de conversion et déploiement sur Jetson
-│                             # best.onnx et best.engine NON versionnés (trop volumineux / spécifiques au matériel)
-│                             # → Voir section Déploiement pour les générer
+│   ├── best.pt               # ⚠️ See Releases section (~50 MB)
+│   └── JETSON.md             # Conversion and deployment guide for Jetson
+│                             # best.onnx and best.engine NOT versioned (too large / hardware-specific)
+│                             # → See Deployment section to generate them
 │
 ├── src/
-│   ├── app.py                # Interface Gradio (test local / webcam)
-│   └── live_jetson.py        # Inférence temps réel optimisée pour la Jetson
+│   ├── app.py                # Gradio interface (local test / webcam)
+│   └── live_jetson.py        # Real-time inference optimized for Jetson
 │
 ├── data/
-│   └── data_img/             # Images de test (exemples de défauts)
+│   └── data_img/             # Test images (defect examples)
 │
 └── requirements.txt
 ```
 
 ---
 
-## 🚀 Installation & Lancement
+## 🚀 Installation & Usage
 
-### 1. Cloner le dépôt
-
+### 1. Clone the repository
 ```bash
 git clone https://github.com/nolannedelec/YOLOv8-WindTurbine-Inspection.git
 cd YOLOv8-WindTurbine-Inspection
 ```
 
-### 2. Installer les dépendances
-
+### 2. Install dependencies
 ```bash
 pip install -r requirements.txt
 ```
+> Dependencies: `ultralytics`, `gradio`, `numpy`, `opencv-python`
 
-> Dépendances : `ultralytics`, `gradio`, `numpy`, `opencv-python`
+### 3. Download the model
+The `best.pt` file is ~50 MB and **cannot be stored directly in the repository**. It is available in the **[Releases](https://github.com/nolannedelec/YOLOv8-WindTurbine-Inspection/releases)** section of this repository.
 
-### 3. Récupérer le modèle
+Place it in the `models/` folder once downloaded.
 
-Le fichier `best.pt` fait ~50 Mo et **ne peut pas être stocké directement dans le dépôt**. Il est disponible dans la section **[Releases](https://github.com/nolannedelec/YOLOv8-WindTurbine-Inspection/releases)** de ce dépôt.
-
-Placez-le dans le dossier `models/` une fois téléchargé.
-
-### 4. Lancer l'interface Gradio (test local)
-
+### 4. Launch the Gradio interface (local test)
 ```bash
 python src/app.py
 ```
-
-L'interface permet de :
-- Choisir la source d'entrée (image uploadée ou flux webcam)
-- Ajuster dynamiquement le seuil de confiance
-- Visualiser l'image annotée avec le bilan des défauts détectés
+The interface allows you to:
+- Choose the input source (uploaded image or webcam stream)
+- Dynamically adjust the confidence threshold
+- Visualize the annotated image along with a summary of detected defects
 
 ---
 
-## 🤖 Déploiement sur NVIDIA Jetson Orin Nano
+## 🤖 Deployment on NVIDIA Jetson Orin Nano
 
-Le guide complet de conversion et de déploiement (préparation de la Jetson, passage `.pt` → `.onnx` → `.engine`, lancement de l'inférence, comparaison des performances) est disponible ici :
+The complete conversion and deployment guide (Jetson setup, `.pt` → `.onnx` → `.engine` pipeline, running inference, performance comparison) is available here:
 
 📖 **[models/JETSON.md](./models/JETSON.md)**
 
 ---
 
-## 📦 info sur requirements.txt
+## 📦 requirements.txt
 
 ```
 ultralytics
@@ -122,4 +113,4 @@ opencv-python
 
 ---
 
-*Projet réalisé dans le cadre du Master 1 à l'**ISEN Brest** – 2026*
+*Project developed as part of the Master 1 program at **ISEN Brest** – 2026*
